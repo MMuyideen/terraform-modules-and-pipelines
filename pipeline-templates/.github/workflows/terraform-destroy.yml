@@ -1,0 +1,119 @@
+name: Terraform Destroy
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        description: "Directory containing Terraform configuration"
+        required: true
+        type: string
+      terraform_version:
+        description: "Terraform version to use"
+        required: false
+        type: string
+        default: "1.7.0"
+      backend_config:
+        description: "Backend configuration string (e.g., -backend-config=key=value)"
+        required: false
+        type: string
+      var_file:
+        description: "Path to Terraform variables file"
+        required: false
+        type: string
+      cloud_provider:
+        description: "Cloud provider (azure or aws)"
+        required: true
+        type: string
+      environment:
+        description: "Environment name (dev, staging, prod, etc.)"
+        required: false
+        type: string
+        default: "dev"
+      modules_repo:
+        description: "Repository containing Terraform modules"
+        required: false
+        type: string
+        default: "mmuyideen/terraform-modules-and-pipelines"
+    secrets:
+      ARM_CLIENT_ID:
+        required: false
+      ARM_CLIENT_SECRET:
+        required: false
+      ARM_SUBSCRIPTION_ID:
+        required: false
+      ARM_TENANT_ID:
+        required: false
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_REGION:
+        required: false
+      TF_VAR_admin_password:
+        required: false
+      TF_VAR_subscription_id:
+        required: false
+
+jobs:
+  terraform-destroy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
+
+    env:
+      TF_VERSION: ${{ inputs.terraform_version }}
+      ENVIRONMENT: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout modules repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.modules_repo }}
+          path: modules-repo
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+
+      - name: Configure Azure credentials
+        if: inputs.cloud_provider == 'azure'
+        run: |
+          echo "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        if: inputs.cloud_provider == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Set Terraform variables from secrets
+        env:
+          TF_VAR_admin_password: ${{ secrets.TF_VAR_admin_password }}
+          TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
+        run: |
+          if [ -n "$TF_VAR_admin_password" ]; then
+            echo "TF_VAR_admin_password=$TF_VAR_admin_password" >> $GITHUB_ENV
+          fi
+          if [ -n "$TF_VAR_subscription_id" ]; then
+            echo "TF_VAR_subscription_id=$TF_VAR_subscription_id" >> $GITHUB_ENV
+          fi
+
+      - name: Terraform init
+        run: |
+          terraform init \
+            -backend=true \
+            ${{ inputs.backend_config }}
+
+      - name: Terraform destroy
+        run: terraform destroy -auto-approve

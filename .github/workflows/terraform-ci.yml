@@ -1,0 +1,181 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        description: "Directory containing Terraform configuration"
+        required: false
+        type: string
+        default: "."
+      terraform_version:
+        description: "Terraform version to use"
+        required: false
+        type: string
+        default: "1.7.0"
+      cloud_provider:
+        description: "Cloud provider (azure or aws)"
+        required: true
+        type: string
+      environment:
+        description: "Environment name (dev, staging, prod)"
+        required: false
+        type: string
+        default: "dev"
+      action:
+        description: "Terraform action: plan, apply, or destroy"
+        required: false
+        type: string
+        default: "plan"
+      extra_tf_vars:
+        description: 'Additional TF variables as JSON, e.g. {"os_type":"linux","vm_size":"Standard_B2ms"}'
+        required: false
+        type: string
+        default: "{}"
+      var_file:
+        description: "Path to a .tfvars file (optional)"
+        required: false
+        type: string
+      extra_commands:
+        description: "Shell commands to run after a successful apply (e.g. kubectl apply)"
+        required: false
+        type: string
+    secrets:
+      ARM_CLIENT_ID:
+        required: false
+      ARM_CLIENT_SECRET:
+        required: false
+      ARM_SUBSCRIPTION_ID:
+        required: false
+      ARM_TENANT_ID:
+        required: false
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_REGION:
+        required: false
+      AWS_ROLE_TO_ASSUME:
+        required: false
+      TF_VAR_admin_password:
+        required: false
+      TF_VAR_subscription_id:
+        required: false
+
+jobs:
+  terraform:
+    name: "Terraform ${{ inputs.action }}"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
+
+    steps:
+      # ── Checkout ──
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+
+      # ── Azure credentials (OIDC preferred, falls back to client secret) ──
+      - name: Azure credentials (OIDC)
+        if: inputs.cloud_provider == 'azure'
+        run: |
+          echo "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}"         >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}"         >> $GITHUB_ENV
+          if [ -n "${{ secrets.ARM_CLIENT_SECRET }}" ]; then
+            echo "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" >> $GITHUB_ENV
+          else
+            echo "ARM_USE_OIDC=true" >> $GITHUB_ENV
+          fi
+
+      # ── AWS credentials (Role preferred, falls back to access keys) ──
+      - name: AWS credentials (IAM Role)
+        if: inputs.cloud_provider == 'aws' && secrets.AWS_ROLE_TO_ASSUME != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: AWS credentials (Access Keys)
+        if: inputs.cloud_provider == 'aws' && secrets.AWS_ROLE_TO_ASSUME == ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      # ── Set TF_VARs from secrets ──
+      - name: Set TF variables from secrets
+        run: |
+          [ -n "${{ secrets.TF_VAR_admin_password }}" ]  && echo "TF_VAR_admin_password=${{ secrets.TF_VAR_admin_password }}"   >> $GITHUB_ENV || true
+          [ -n "${{ secrets.TF_VAR_subscription_id }}" ] && echo "TF_VAR_subscription_id=${{ secrets.TF_VAR_subscription_id }}" >> $GITHUB_ENV || true
+
+      # ── Set extra TF_VARs from JSON input ──
+      - name: Set extra Terraform variables
+        if: inputs.extra_tf_vars != '{}'
+        run: |
+          echo '${{ inputs.extra_tf_vars }}' | jq -r 'to_entries[] | "TF_VAR_\(.key)=\(.value)"' >> $GITHUB_ENV
+
+      # ── Terraform workflow ──
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Plan
+        if: inputs.action == 'plan' || inputs.action == 'apply'
+        run: |
+          terraform plan -no-color \
+            ${{ inputs.var_file != '' && format('-var-file={0}', inputs.var_file) || '' }} \
+            -out=tfplan
+
+      - name: Upload Plan Artifact
+        if: inputs.action == 'plan' || inputs.action == 'apply'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: ${{ inputs.working_directory }}/tfplan
+          retention-days: 7
+
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        run: terraform apply -no-color -auto-approve tfplan
+
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        run: |
+          terraform destroy -no-color -auto-approve \
+            ${{ inputs.var_file != '' && format('-var-file={0}', inputs.var_file) || '' }}
+
+      # ── Post-apply commands ──
+      - name: Run extra commands
+        if: inputs.extra_commands != '' && inputs.action == 'apply' && success()
+        run: ${{ inputs.extra_commands }}
+
+      # ── Capture outputs ──
+      - name: Terraform Outputs
+        if: inputs.action == 'apply' && success()
+        run: terraform output -json > terraform-outputs.json
+        continue-on-error: true
+
+      - name: Upload Outputs
+        if: inputs.action == 'apply' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-outputs-${{ inputs.environment }}
+          path: ${{ inputs.working_directory }}/terraform-outputs.json
+          retention-days: 30
+        continue-on-error: true
