@@ -97,20 +97,32 @@ jobs:
           fi
 
       # ── AWS credentials (Role preferred, falls back to access keys) ──
+      # secrets context is not available in `if:` expressions, so we detect
+      # the credential method in a run step and expose it via GITHUB_ENV.
+      - name: Detect AWS credential method
+        if: inputs.cloud_provider == 'aws'
+        run: |
+          if [ -n "${{ secrets.AWS_ROLE_TO_ASSUME }}" ]; then
+            echo "AWS_USE_ROLE=true" >> $GITHUB_ENV
+          else
+            echo "AWS_USE_ROLE=false" >> $GITHUB_ENV
+          fi
+
       - name: AWS credentials (IAM Role)
-        if: inputs.cloud_provider == 'aws' && secrets.AWS_ROLE_TO_ASSUME != ''
+        if: inputs.cloud_provider == 'aws' && env.AWS_USE_ROLE == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
       - name: AWS credentials (Access Keys)
-        if: inputs.cloud_provider == 'aws' && secrets.AWS_ROLE_TO_ASSUME == ''
+        if: inputs.cloud_provider == 'aws' && env.AWS_USE_ROLE == 'false'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
 
       # ── Set TF_VARs from secrets ──
       - name: Set TF variables from secrets
