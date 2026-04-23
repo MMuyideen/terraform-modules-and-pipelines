@@ -16,7 +16,7 @@ variable "virtual_network_id" {
 
 variable "dns_records" {
   description = "A list of DNS records to create in the zone"
-  type = list(object({
+  type = map(object({
     name    = string
     type    = string
     ttl     = optional(number, 3600)

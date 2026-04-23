@@ -17,7 +17,10 @@ resource "azurerm_network_interface" "this" {
 
 # Associate the network security group with the network interface if provided
 resource "azurerm_network_interface_security_group_association" "this" {
-  count                     = var.nsg_id != null ? 1 : 0
+  # If nsg_id is null, the set is empty (0 resources). 
+  # If it has a value, the set has one item (1 resource).
+  for_each = var.nsg_id != null ? toset([var.nsg_id]) : []
+
   network_interface_id      = azurerm_network_interface.this.id
-  network_security_group_id = var.nsg_id
+  network_security_group_id = each.value # each.value is the nsg_id
 }

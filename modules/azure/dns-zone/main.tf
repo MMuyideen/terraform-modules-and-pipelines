@@ -7,7 +7,7 @@ resource "azurerm_private_dns_zone" "this" {
 
 # Link the private DNS zone to a virtual network (if provided)
 resource "azurerm_private_dns_zone_virtual_network_link" "this" {
-  count = var.virtual_network_id != null ? 1 : 0
+  # count = var.virtual_network_id != null ? 1 : 0
 
   name                  = "${var.name}-vnet-link"
   resource_group_name   = var.resource_group_name
@@ -18,8 +18,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
 # Optionally create DNS records
 resource "azurerm_private_dns_a_record" "this" {
   for_each = {
-    for record in var.dns_records : "${record.name}-${record.type}" => record
-    if record.type == "A"
+    for k, v in var.dns_records : k => v
+    if v.type == "A"
   }
 
   name                = each.value.name
