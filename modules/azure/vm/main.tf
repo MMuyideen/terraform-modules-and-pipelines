@@ -1,11 +1,4 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
-  }
-}
+
 
 # Deploy a Linux virtual machine when os_type is set to "linux"
 # This resource uses count for conditional creation based on os_type variable
