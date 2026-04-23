@@ -106,13 +106,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
-
-      # ── Set TF_VARs from secrets ──
-      - name: Set TF variables from secrets
-        run: |
-          [ -n "${{ secrets.TF_VAR_admin_password }}" ]  && echo "TF_VAR_admin_password=${{ secrets.TF_VAR_admin_password }}"   >> $GITHUB_ENV || true
-          [ -n "${{ secrets.TF_VAR_subscription_id }}" ] && echo "TF_VAR_subscription_id=${{ secrets.TF_VAR_subscription_id }}" >> $GITHUB_ENV || true
-
       # ── Set extra TF_VARs from JSON input ──
       - name: Set extra Terraform variables
         if: inputs.extra_tf_vars != '{}'
@@ -139,14 +132,6 @@ jobs:
         run: |
           terraform plan -out=tfplan 
 
-      - name: Upload Plan Artifact
-        if: inputs.action == 'plan' || inputs.action == 'apply'
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan-${{ inputs.environment }}
-          path: ${{ inputs.working_directory }}/tfplan
-          retention-days: 7
-
       - name: Terraform Apply
         if: inputs.action == 'apply'
         run: terraform apply -no-color -auto-approve tfplan
@@ -165,13 +150,4 @@ jobs:
       - name: Terraform Outputs
         if: inputs.action == 'apply' && success()
         run: terraform output -json > terraform-outputs.json
-        continue-on-error: true
-
-      - name: Upload Outputs
-        if: inputs.action == 'apply' && success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-outputs-${{ inputs.environment }}
-          path: ${{ inputs.working_directory }}/terraform-outputs.json
-          retention-days: 30
         continue-on-error: true
