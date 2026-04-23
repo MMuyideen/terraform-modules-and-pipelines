@@ -40,14 +40,18 @@ on:
         description: "Shell commands to run after a successful apply (e.g. kubectl apply)"
         required: false
         type: string
+      backend_config:
+        description: "Additional backend config arguments, e.g. -backend-config=key=value"
+        required: false
+        type: string
     secrets:
-      ARM_CLIENT_ID:
+      AZURE_CLIENT_ID:
         required: false
-      ARM_CLIENT_SECRET:
+      AZURE_CLIENT_SECRET:
         required: false
-      ARM_SUBSCRIPTION_ID:
+      AZURE_SUBSCRIPTION_ID:
         required: false
-      ARM_TENANT_ID:
+      AZURE_TENANT_ID:
         required: false
       AWS_ACCESS_KEY_ID:
         required: false
@@ -84,17 +88,13 @@ jobs:
           terraform_version: ${{ inputs.terraform_version }}
 
       # ── Azure credentials (OIDC preferred, falls back to client secret) ──
-      - name: Azure credentials (OIDC)
+      - name: Configure Azure credentials
         if: inputs.cloud_provider == 'azure'
-        run: |
-          echo "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}"         >> $GITHUB_ENV
-          echo "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
-          echo "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}"         >> $GITHUB_ENV
-          if [ -n "${{ secrets.ARM_CLIENT_SECRET }}" ]; then
-            echo "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" >> $GITHUB_ENV
-          else
-            echo "ARM_USE_OIDC=true" >> $GITHUB_ENV
-          fi
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # ── AWS credentials (Role preferred, falls back to access keys) ──
       # secrets context is not available in `if:` expressions, so we detect
@@ -138,7 +138,7 @@ jobs:
 
       # ── Terraform workflow ──
       - name: Terraform Init
-        run: terraform init
+        run: terraform init ${{ inputs.backend_config }}
 
       - name: Terraform Validate
         run: terraform validate
