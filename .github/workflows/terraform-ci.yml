@@ -129,7 +129,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init ${{ inputs.backend_config }}
+        run: terraform init 
 
       - name: Terraform Validate
         run: terraform validate
