@@ -22,7 +22,6 @@ variable "dns_records" {
     ttl     = optional(number, 3600)
     records = optional(list(string), [])
   }))
-  default = []
 }
 
 variable "tags" {
