@@ -35,13 +35,13 @@ on:
         type: string
         default: "mmuyideen/terraform-modules-and-pipelines"
     secrets:
-      ARM_CLIENT_ID:
+      AZURE_CLIENT_ID:
         required: false
-      ARM_CLIENT_SECRET:
+      AZURE_CLIENT_SECRET:
         required: false
-      ARM_SUBSCRIPTION_ID:
+      AZURE_SUBSCRIPTION_ID:
         required: false
-      ARM_TENANT_ID:
+      AZURE_TENANT_ID:
         required: false
       AWS_ACCESS_KEY_ID:
         required: false
@@ -69,25 +69,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout modules repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.modules_repo }}
-          path: modules-repo
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Checkout modules repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: ${{ inputs.modules_repo }}
+      #     path: modules-repo
+      #     token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ inputs.terraform_version }}
+        uses: hashicorp/setup-terraform@v4
 
       - name: Configure Azure credentials
         if: inputs.cloud_provider == 'azure'
         run: |
-          echo "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
-          echo "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AZURE_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
+          echo "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         if: inputs.cloud_provider == 'aws'
@@ -97,17 +95,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
-      - name: Set Terraform variables from secrets
-        env:
-          TF_VAR_admin_password: ${{ secrets.TF_VAR_admin_password }}
-          TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
-        run: |
-          if [ -n "$TF_VAR_admin_password" ]; then
-            echo "TF_VAR_admin_password=$TF_VAR_admin_password" >> $GITHUB_ENV
-          fi
-          if [ -n "$TF_VAR_subscription_id" ]; then
-            echo "TF_VAR_subscription_id=$TF_VAR_subscription_id" >> $GITHUB_ENV
-          fi
+      # - name: Set Terraform variables from secrets
+      #   env:
+      #     TF_VAR_admin_password: ${{ secrets.TF_VAR_admin_password }}
+      #     TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
+      #   run: |
+      #     if [ -n "$TF_VAR_admin_password" ]; then
+      #       echo "TF_VAR_admin_password=$TF_VAR_admin_password" >> $GITHUB_ENV
+      #     fi
+      #     if [ -n "$TF_VAR_subscription_id" ]; then
+      #       echo "TF_VAR_subscription_id=$TF_VAR_subscription_id" >> $GITHUB_ENV
+      #     fi
 
       - name: Terraform init
         run: |

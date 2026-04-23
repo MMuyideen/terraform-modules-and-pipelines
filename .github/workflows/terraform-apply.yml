@@ -7,11 +7,11 @@ on:
         description: "Directory containing Terraform configuration"
         required: true
         type: string
-      terraform_version:
-        description: "Terraform version to use"
-        required: false
-        type: string
-        default: "1.7.0"
+      # terraform_version:
+      #   description: "Terraform version to use"
+      #   required: false
+      #   type: string
+      #   default: "1.7.0"
       backend_config:
         description: "Backend configuration string (e.g., -backend-config=key=value)"
         required: false
@@ -34,19 +34,19 @@ on:
         required: false
         type: boolean
         default: false
-      modules_repo:
-        description: "Repository containing Terraform modules"
-        required: false
-        type: string
-        default: "mmuyideen/terraform-modules-and-pipelines"
+      # modules_repo:
+      #   description: "Repository containing Terraform modules"
+      #   required: false
+      #   type: string
+      #   default: "mmuyideen/terraform-modules-and-pipelines"
     secrets:
-      ARM_CLIENT_ID:
+      AZURE_CLIENT_ID:
         required: false
-      ARM_CLIENT_SECRET:
+      AZURE_CLIENT_SECRET:
         required: false
-      ARM_SUBSCRIPTION_ID:
+      AZURE_SUBSCRIPTION_ID:
         required: false
-      ARM_TENANT_ID:
+      AZURE_TENANT_ID:
         required: false
       AWS_ACCESS_KEY_ID:
         required: false
@@ -72,27 +72,26 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Checkout modules repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.modules_repo }}
-          path: modules-repo
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Checkout modules repository
+      #   uses: actions/checkout@v5
+      #   with:
+      #     repository: mmuyideen/terraform-modules-and-pipelines
+      #     path: modules-repo
+      #     token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ inputs.terraform_version }}
+        uses: hashicorp/setup-terraform@v4
+
 
       - name: Configure Azure credentials
         if: inputs.cloud_provider == 'azure'
         run: |
-          echo "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
-          echo "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AZURE_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
+          echo "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         if: inputs.cloud_provider == 'aws'

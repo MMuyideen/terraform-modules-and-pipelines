@@ -40,13 +40,13 @@ on:
         type: string
         default: "mmuyideen/terraform-modules-and-pipelines"
     secrets:
-      ARM_CLIENT_ID:
+      AZURE_CLIENT_ID:
         required: false
-      ARM_CLIENT_SECRET:
+      AZURE_CLIENT_SECRET:
         required: false
-      ARM_SUBSCRIPTION_ID:
+      AZURE_SUBSCRIPTION_ID:
         required: false
-      ARM_TENANT_ID:
+      AZURE_TENANT_ID:
         required: false
       AWS_ACCESS_KEY_ID:
         required: false
@@ -88,11 +88,11 @@ jobs:
 
       - name: Configure Azure credentials
         if: inputs.cloud_provider == 'azure'
-        run: |
-          echo "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
-          echo "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}" >> $GITHUB_ENV
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Configure AWS credentials
         if: inputs.cloud_provider == 'aws'
