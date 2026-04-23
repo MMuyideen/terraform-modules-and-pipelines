@@ -13,11 +13,6 @@ output "gateway_url" {
   value       = azurerm_api_management.this.gateway_url
 }
 
-output "management_api_url" {
-  description = "The management API URL of the API Management service"
-  value       = azurerm_api_management.this.management_api_endpoint
-}
-
 output "private_ip_addresses" {
   description = "The private IP addresses of the API Management service"
   value       = azurerm_api_management.this.private_ip_addresses
