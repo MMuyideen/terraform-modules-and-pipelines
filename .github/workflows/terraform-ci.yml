@@ -27,10 +27,6 @@ on:
         required: false
         type: string
         default: "{}"
-      var_file:
-        description: "Path to a .tfvars file (optional)"
-        required: false
-        type: string
       extra_commands:
         description: "Shell commands to run after a successful apply (e.g. kubectl apply)"
         required: false
@@ -141,9 +137,7 @@ jobs:
       - name: Terraform Plan
         if: inputs.action == 'plan' || inputs.action == 'apply'
         run: |
-          terraform plan -no-color \
-            ${{ inputs.var_file != '' && format('-var-file={0}', inputs.var_file) || '' }} \
-            -out=tfplan
+          terraform plan -out=tfplan 
 
       - name: Upload Plan Artifact
         if: inputs.action == 'plan' || inputs.action == 'apply'
@@ -160,8 +154,7 @@ jobs:
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
         run: |
-          terraform destroy -no-color -auto-approve \
-            ${{ inputs.var_file != '' && format('-var-file={0}', inputs.var_file) || '' }}
+          terraform destroy -no-color -auto-approve
 
       # ── Post-apply commands ──
       - name: Run extra commands
