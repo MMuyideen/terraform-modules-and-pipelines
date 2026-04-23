@@ -17,10 +17,10 @@ resource "azurerm_network_interface" "this" {
 
 # Associate the network security group with the network interface if provided
 resource "azurerm_network_interface_security_group_association" "this" {
-  # If nsg_id is null, the set is empty (0 resources). 
-  # If it has a value, the set has one item (1 resource).
-  for_each = var.nsg_id != null ? toset([var.nsg_id]) : []
+  # We use a static string "enabled" as the key. 
+  # Terraform knows the string "enabled" at plan time!
+  for_each = var.nsg_id != null ? { "enabled" = var.nsg_id } : {}
 
   network_interface_id      = azurerm_network_interface.this.id
-  network_security_group_id = each.value # each.value is the nsg_id
+  network_security_group_id = each.value # This is the actual nsg_id
 }
