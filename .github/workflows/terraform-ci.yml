@@ -136,7 +136,7 @@ jobs:
 
       - name: Terraform Apply
         if: inputs.action == 'apply'
-        run: terraform apply -no-color -auto-approve tfplan
+        run: terraform apply
 
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
