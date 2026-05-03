@@ -95,7 +95,7 @@ jobs:
 
       - name: Terraform Apply
         if: inputs.action == 'apply'
-        run: terraform apply
+        run: terraform apply -auto-approve
 
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
