@@ -38,21 +38,7 @@ on:
     secrets:
       AZURE_CREDENTIALS:
         required: false
-      AZURE_CLIENT_ID:
-        required: false
-      AZURE_CLIENT_SECRET:
-        required: false
-      AZURE_SUBSCRIPTION_ID:
-        required: false
-      AZURE_TENANT_ID:
-        required: false
-      AWS_ACCESS_KEY_ID:
-        required: false
-      AWS_SECRET_ACCESS_KEY:
-        required: false
-      AWS_REGION:
-        required: false
-      AWS_ROLE_TO_ASSUME:
+      TF_VAR_subscription_id:
         required: false
 
 jobs:
@@ -78,33 +64,6 @@ jobs:
         uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      # ── AWS credentials (Role preferred, falls back to access keys) ──
-      # secrets context is not available in `if:` expressions, so we detect
-      # the credential method in a run step and expose it via GITHUB_ENV.
-      - name: Detect AWS credential method
-        if: inputs.cloud_provider == 'aws'
-        run: |
-          if [ -n "${{ secrets.AWS_ROLE_TO_ASSUME }}" ]; then
-            echo "AWS_USE_ROLE=true" >> $GITHUB_ENV
-          else
-            echo "AWS_USE_ROLE=false" >> $GITHUB_ENV
-          fi
-
-      - name: AWS credentials (IAM Role)
-        if: inputs.cloud_provider == 'aws' && env.AWS_USE_ROLE == 'true'
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
-
-      - name: AWS credentials (Access Keys)
-        if: inputs.cloud_provider == 'aws' && env.AWS_USE_ROLE == 'false'
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
       # ── Set extra TF_VARs from JSON input ──
       - name: Set extra Terraform variables
