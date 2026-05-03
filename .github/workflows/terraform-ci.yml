@@ -51,6 +51,8 @@ jobs:
     defaults:
       run:
         working-directory: ${{ inputs.working_directory }}
+    env:
+          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     
 
 
@@ -90,14 +92,10 @@ jobs:
         if: inputs.action == 'plan' || inputs.action == 'apply'
         run: |
           terraform plan
-        env:
-          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Terraform Apply
         if: inputs.action == 'apply'
         run: terraform apply
-        env:
-          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
