@@ -67,5 +67,5 @@ dns_records = [
     type    = "A"
     ttl     = 3600
     records = ["10.0.1.10"]
-    },
+  },
 ]
