@@ -1,12 +1,15 @@
 name: Module test workflow for Azure
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'modules/azure/'
-      - 'test/azure/*'
+    workflow_dispatch:
+    push:
+        branches:
+        - main
+        paths:
+        - 'modules/azure/'
+        - 'test/azure/*'
+
+
 
 jobs:
   terraform_apply:
