@@ -1,15 +1,15 @@
 resource "azurerm_private_dns_zone" "this" {
-  name                = var.name
+  name                = var.private_dns_zone_name
   resource_group_name = var.resource_group_name
 
   tags = var.tags
 }
 
-# Link the private DNS zone to a virtual network (if provided)
+# Link the private DNS zone to a virtual network (if requested)
 resource "azurerm_private_dns_zone_virtual_network_link" "this" {
-  # count = var.virtual_network_id != null ? 1 : 0
+  count = var.create_vnet_link ? 1 : 0
 
-  name                  = "${var.name}-vnet-link"
+  name                  = "${var.private_dns_zone_name}-vnet-link"
   resource_group_name   = var.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.this.name
   virtual_network_id    = var.virtual_network_id

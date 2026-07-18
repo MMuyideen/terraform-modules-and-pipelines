@@ -1,4 +1,4 @@
-variable "name" {
+variable "pip_name" {
   description = "The name of the public IP"
   type        = string
 }
@@ -22,6 +22,12 @@ variable "allocation_method" {
     condition     = contains(["Static", "Dynamic"], var.allocation_method)
     error_message = "allocation_method must be either 'Static' or 'Dynamic'."
   }
+}
+
+variable "domain_name_label" {
+  description = "Label for the FQDN of the public IP (optional)"
+  type        = string
+  default     = null
 }
 
 variable "tags" {

@@ -1,4 +1,4 @@
-variable "name" {
+variable "vnet_name" {
   description = "The name of the virtual network"
   type        = string
 }
@@ -22,7 +22,7 @@ variable "subnets" {
   description = "A list of subnets to create in the virtual network"
   type = list(object({
     name           = string
-    address_prefix = string
+    address_prefixes = list(string)
   }))
   default = []
 }

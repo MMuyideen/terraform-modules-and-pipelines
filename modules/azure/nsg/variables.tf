@@ -1,4 +1,4 @@
-variable "name" {
+variable "nsg_name" {
   description = "The name of the network security group"
   type        = string
 }
@@ -13,15 +13,18 @@ variable "location" {
   type        = string
 }
 
-variable "inbound_rules" {
+variable "security_rule" {
   description = "A list of inbound security rules to create"
   type = list(object({
     name                   = string
     priority               = number
     destination_port_range = string
     protocol               = optional(string, "Tcp")
+    direction              = optional(string, "Inbound")
     source_address_prefix  = optional(string, "*")
     access                 = optional(string, "Allow")
+    source_port_range      = optional(string, "*")
+    destination_address_prefix = optional(string, "*")
   }))
   default = []
 }

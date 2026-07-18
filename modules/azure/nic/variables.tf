@@ -1,4 +1,4 @@
-variable "name" {
+variable "nic_name" {
   description = "The name of the network interface"
   type        = string
 }
@@ -28,6 +28,12 @@ variable "nsg_id" {
   description = "The ID of the network security group to associate with the NIC (optional)"
   type        = string
   default     = null
+}
+
+variable "create_nsg_association" {
+  description = "Whether to associate var.nsg_id with the NIC. Must be set explicitly (not derived from nsg_id) because nsg_id is often the computed output of a sibling resource and is not known until apply."
+  type        = bool
+  default     = false
 }
 
 variable "tags" {
