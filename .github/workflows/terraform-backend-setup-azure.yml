@@ -52,7 +52,7 @@ jobs:
             }
 
       - name: Create resource group
-        uses: azure/CLI@v2
+        uses: azure/CLI@v3
         with:
           azcliversion: latest
           inlineScript: |
@@ -61,7 +61,7 @@ jobs:
               --location ${{ inputs.location }}
 
       - name: Create storage account
-        uses: azure/CLI@v2
+        uses: azure/CLI@v3
         with:
           azcliversion: latest
           inlineScript: |
@@ -72,7 +72,7 @@ jobs:
               --sku Standard_LRS
 
       - name: Create blob container
-        uses: azure/CLI@v2
+        uses: azure/CLI@v3
         with:
           azcliversion: latest
           inlineScript: |
