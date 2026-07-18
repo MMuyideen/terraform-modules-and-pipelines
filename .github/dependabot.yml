@@ -5,7 +5,7 @@
 version: 2
 updates:
   - package-ecosystem: "terraform" # See documentation for possible values
-    directory: "/modules" # Location of package manifests
+    directory: "/test/azure" # Location of package manifests
     schedule:
       interval: "weekly"
 

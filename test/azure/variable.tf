@@ -131,6 +131,11 @@ variable "domain_name_label" {
 variable "private_dns_zone_name" {
   description = "The name of the private DNS zone"
   type        = string
+
+  validation {
+    condition     = length(split(".", var.private_dns_zone_name)) >= 2
+    error_message = "private_dns_zone_name must have two or more labels separated by dots (e.g. \"example.internal\"), per Azure Private DNS zone naming rules."
+  }
 }
 
 variable "dns_records" {
