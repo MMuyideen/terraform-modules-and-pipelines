@@ -2,7 +2,7 @@ terraform {
   backend "azurerm" {
     resource_group_name  = "terraform-backend-rg"
     storage_account_name = "deenterraformstate"
-    container_name       = "tfstate/test"
-    key                  = "azure.tfstate"
+    container_name       = "tfstate"
+    key                  = "test-azure.tfstate"
   }
 }
