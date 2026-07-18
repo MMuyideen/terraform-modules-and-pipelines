@@ -67,10 +67,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # - name: Checkout modules repository
-      #   uses: actions/checkout@v4
+      #   uses: actions/checkout@v7
       #   with:
       #     repository: ${{ inputs.modules_repo }}
       #     path: modules-repo

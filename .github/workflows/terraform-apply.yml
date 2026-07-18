@@ -72,10 +72,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       # - name: Checkout modules repository
-      #   uses: actions/checkout@v5
+      #   uses: actions/checkout@v7
       #   with:
       #     repository: mmuyideen/terraform-modules-and-pipelines
       #     path: modules-repo
