@@ -22,9 +22,14 @@ module "nsg" {
   tags                = var.tags
 }
 
+module "random" {
+  source = "../../modules/azure/random"
+  length = 4
+}
+
 module "storage_account" {
   source                   = "../../modules/azure/storage-account"
-  storage_account_name     = var.storage_account_name
+  storage_account_name     = "${var.storage_account_name}${module.random.result}"
   resource_group_name      = module.resource_group.name
   location                 = var.location
   account_tier             = var.account_tier

@@ -51,7 +51,7 @@ security_rule = [
   }
 ]
 
-storage_account_name     = "deenteststrageacct2"
+storage_account_name     = "deentest"
 account_tier             = "Standard"
 account_replication_type = "LRS"
 
