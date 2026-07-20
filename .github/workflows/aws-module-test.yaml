@@ -1,0 +1,108 @@
+name: Module test workflow for AWS
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+        - main
+        paths:
+        - 'modules/aws/*'
+        - 'test/aws/*'
+
+jobs:
+  terraform_apply:
+    name: "Terraform Apply"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: "test/aws"
+    env:
+    #   ARM_USE_OIDC: "true"
+ 
+
+    steps:
+      # ── Checkout ──
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::413677591682:role/Github-action-oidc
+          aws-region: us-east-1
+          role-session-name: GitHubActions-${{ github.run_id }}
+
+      # ── Terraform workflow ──
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Plan
+        run: |
+          terraform plan
+
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve
+
+
+  terraform_destroy:
+    name: "Terraform Destroy"
+    runs-on: ubuntu-latest
+    needs: terraform_apply
+    if: github.run_attempt == success()
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: "test/aws"
+    env:
+    #   ARM_USE_OIDC: "true"
+
+    steps:
+      # ── Checkout ──
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::413677591682:role/Github-action-oidc
+          aws-region: us-east-1
+          role-session-name: GitHubActions-${{ github.run_id }}
+
+      # ── Terraform workflow ──
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -destroy
+
+      - name: Terraform Destroy
+        run: |
+          terraform destroy -auto-approve
