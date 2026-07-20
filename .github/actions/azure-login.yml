@@ -4,19 +4,19 @@ description: >
   (e.g. the federated credential isn't configured yet), retries using
   a service principal credentials JSON as a fallback.
 
-inputs:
-  client-id:
-    description: 'Azure AD application (client) ID used for OIDC login'
-    required: false
-  tenant-id:
-    description: 'Azure AD tenant ID used for OIDC login'
-    required: false
-  subscription-id:
-    description: 'Azure subscription ID used for OIDC login'
-    required: false
-  creds:
-    description: 'Azure service principal credentials JSON, used only if OIDC login fails'
-    required: false
+# inputs:
+#   client-id:
+#     description: 'Azure AD application (client) ID used for OIDC login'
+#     required: false
+#   tenant-id:
+#     description: 'Azure AD tenant ID used for OIDC login'
+#     required: false
+#   subscription-id:
+#     description: 'Azure subscription ID used for OIDC login'
+#     required: false
+#   creds:
+#     description: 'Azure service principal credentials JSON, used only if OIDC login fails'
+#     required: false
 
 runs:
   using: "composite"
@@ -26,12 +26,12 @@ runs:
       uses: azure/login@v3
       continue-on-error: true
       with:
-        client-id: ${{ inputs.client-id }}
-        tenant-id: ${{ inputs.tenant-id }}
-        subscription-id: ${{ inputs.subscription-id }}
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Azure Login with credentials (OIDC fallback)
+    - name: Azure Login with credentials
       if: steps.oidc-login.outcome == 'failure'
       uses: azure/login@v3
       with:
-        creds: ${{ inputs.creds }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
