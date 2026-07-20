@@ -1,0 +1,41 @@
+name: Terraform init validate fmt
+
+on: 
+  workflow_call:
+    inputs:
+      working_directory:
+        description: "Directory containing Terraform configuration"
+        required: true
+        type: string
+
+jobs:
+  terraform_init_validate_fmt:
+    name: "Terraform Init, Validate, and Format Check"
+    runs-on: ubuntu-latest
+    # permissions:
+    #   contents: read
+    #   id-token: write
+    defaults:
+      run:
+        working-directory: "${{ inputs.working_directory }}"
+
+    steps:
+      # ── Checkout ──
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Plan
+        run: |
+          terraform plan
