@@ -46,3 +46,42 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# -------------------
+# EC2
+# -------------------
+
+variable "instance_type" {
+  description = "EC2 instance type for the test instance"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "ssh_allowed_cidrs" {
+  description = "List of CIDR blocks allowed to SSH into the EC2 instance"
+  type        = list(string)
+}
+
+variable "ingress_rules" {
+  description = "List of ingress rules for the EC2 security group"
+  type = list(object({
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
+    description = optional(string)
+  }))
+  default = []
+}
+
+variable "egress_rules" {
+  description = "List of egress rules for the EC2 security group. Defaults to allow all outbound traffic if empty"
+  type = list(object({
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
+    description = optional(string)
+  }))
+  default = []
+}

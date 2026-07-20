@@ -1,43 +1,62 @@
+variable "name" {
+  description = "Name of the EC2 instance, used for tagging"
+  type        = string
+}
+
 variable "ami" {
-  description = "The AMI to use for the instance"
+  description = "AMI ID to launch the instance from"
   type        = string
 }
 
 variable "instance_type" {
-  description = "The type of instance to run"
+  description = "EC2 instance type"
   type        = string
-  default     = "t3.small"
+  default     = "t3.micro"
 }
 
 variable "subnet_id" {
-  description = "The VPC Subnet ID to launch the instance in"
+  description = "ID of the subnet to launch the instance in"
   type        = string
 }
 
-variable "vpc_security_group_ids" {
-  description = "A list of security group IDs to associate with the instance"
+variable "security_group_ids" {
+  description = "List of security group IDs to associate with the instance"
   type        = list(string)
+  default     = []
 }
 
 variable "key_name" {
-  description = "The key name to use for the instance"
+  description = "Name of an existing EC2 key pair to associate with the instance (optional)"
   type        = string
+  default     = null
 }
 
 variable "associate_public_ip_address" {
-  description = "Assign a public IP address to the instance"
+  description = "Whether to assign a public IP address to the instance"
   type        = bool
-  default     = true
+  default     = false
+}
+
+variable "root_volume_size" {
+  description = "Size of the root EBS volume, in GiB"
+  type        = number
+  default     = 8
+}
+
+variable "root_volume_type" {
+  description = "Type of the root EBS volume (e.g. gp3, gp2, io1)"
+  type        = string
+  default     = "gp3"
+}
+
+variable "user_data" {
+  description = "User data script to run on instance launch (optional)"
+  type        = string
+  default     = null
 }
 
 variable "tags" {
   description = "A map of tags to add to the instance"
   type        = map(string)
   default     = {}
-}
-
-variable "user_data" {
-  description = "User data to provide when launching the instance"
-  type        = string
-  default     = null
 }

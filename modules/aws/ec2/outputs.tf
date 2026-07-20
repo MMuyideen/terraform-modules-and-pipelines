@@ -1,14 +1,19 @@
 output "id" {
-  description = "The ID of the instance"
-  value       = aws_instance.main.id
-}
-
-output "public_ip" {
-  description = "The public IP address of the instance"
-  value       = aws_instance.main.public_ip
+  description = "The ID of the EC2 instance"
+  value       = aws_instance.this.id
 }
 
 output "private_ip" {
   description = "The private IP address of the instance"
-  value       = aws_instance.main.private_ip
+  value       = aws_instance.this.private_ip
+}
+
+output "public_ip" {
+  description = "The public IP address of the instance, if assigned"
+  value       = aws_instance.this.public_ip
+}
+
+output "arn" {
+  description = "The ARN of the EC2 instance"
+  value       = aws_instance.this.arn
 }
