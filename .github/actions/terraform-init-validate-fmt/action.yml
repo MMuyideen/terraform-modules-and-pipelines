@@ -1,6 +1,6 @@
-name: 'Terraform Init, Validate, and Format Check'
+name: 'Terraform setup, Init, Validate, and Format Check'
 description: >
-  Runs `terraform init`, `terraform validate`, and `terraform fmt -check -recursive`
+  Setup Terraform and runs `terraform init`, `terraform validate`, and `terraform fmt -check -recursive`
   in sequence for a given working directory.
 
 inputs:

@@ -1,0 +1,43 @@
+name: 'AWS Login (OIDC with credentials fallback)'
+description: >
+  Authenticates to AWS by assuming a role via OIDC. If that fails
+  (e.g. the trust policy isn't configured yet), retries using a
+  static access key / secret key pair as a fallback.
+
+inputs:
+  role-to-assume:
+    description: 'ARN of the IAM role to assume via OIDC'
+    required: false
+  aws-region:
+    description: 'AWS region to configure'
+    required: true
+  role-session-name:
+    description: 'Session name to use when assuming the role via OIDC'
+    required: false
+    default: 'GitHubActions'
+  aws-access-key-id:
+    description: 'Static AWS access key ID, used only if OIDC login fails'
+    required: false
+  aws-secret-access-key:
+    description: 'Static AWS secret access key, used only if OIDC login fails'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: AWS Login with OIDC
+      id: oidc-login
+      uses: aws-actions/configure-aws-credentials@v6
+      continue-on-error: true
+      with:
+        role-to-assume: ${{ inputs.role-to-assume }}
+        aws-region: ${{ inputs.aws-region }}
+        role-session-name: ${{ inputs.role-session-name }}
+
+    - name: AWS Login with credentials
+      if: steps.oidc-login.outcome == 'failure'
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}

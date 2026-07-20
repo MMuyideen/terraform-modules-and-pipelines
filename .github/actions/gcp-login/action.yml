@@ -1,0 +1,33 @@
+name: 'GCP Login (Workload Identity Federation with credentials fallback)'
+description: >
+  Authenticates to GCP via Workload Identity Federation (OIDC). If that
+  fails (e.g. the provider/pool isn't configured yet), retries using a
+  service account key JSON as a fallback.
+
+inputs:
+  workload_identity_provider:
+    description: 'Full resource name of the Workload Identity Provider used for OIDC login'
+    required: false
+  service_account:
+    description: 'Email of the service account to impersonate via Workload Identity Federation'
+    required: false
+  credentials_json:
+    description: 'GCP service account key JSON, used only if Workload Identity Federation login fails'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: GCP Login with Workload Identity Federation
+      id: wif-login
+      uses: google-github-actions/auth@v2
+      continue-on-error: true
+      with:
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+
+    - name: GCP Login with service account key
+      if: steps.wif-login.outcome == 'failure'
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ inputs.credentials_json }}
