@@ -45,7 +45,7 @@ jobs:
       #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Azure Login
-        uses: ../.github/actions/azure-login.yaml
+        uses: ./.github/actions/azure-login.yaml
         
       # ── Terraform workflow ──
 
