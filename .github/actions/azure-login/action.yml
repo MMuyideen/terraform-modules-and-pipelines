@@ -29,6 +29,8 @@ runs:
         client-id: ${{ inputs.client-id }}
         tenant-id: ${{ inputs.tenant-id }}
         subscription-id: ${{ inputs.subscription-id }}
+      env:
+        AZURE_USE_OIDC: "true"
 
     - name: Azure Login with credentials
       if: steps.oidc-login.outcome == 'failure'
