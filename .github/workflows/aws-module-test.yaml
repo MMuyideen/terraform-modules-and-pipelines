@@ -1,13 +1,13 @@
 name: Module test workflow for AWS
 
 on:
-    workflow_dispatch:
-    push:
-        branches:
-        - main
-        paths:
-        - 'modules/aws/*'
-        - 'test/aws/*'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'modules/aws/*'
+      - 'test/aws/*'
 
 jobs:
   terraform_apply:
