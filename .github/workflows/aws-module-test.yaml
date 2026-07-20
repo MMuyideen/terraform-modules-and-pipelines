@@ -36,17 +36,10 @@ jobs:
 
       # ── Terraform workflow ──
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Validate
-        run: terraform validate
-
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
+      - name: Terraform Init, Validate, Format Check
+        uses: ./.github/actions/terraform-init-validate-fmt
+        with:
+          working-directory: "test/aws"
 
       - name: Terraform Plan
         run: |
@@ -81,18 +74,11 @@ jobs:
 
       # ── Terraform workflow ──
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Validate
-        run: terraform validate
-
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
-        continue-on-error: true
+      - name: Terraform Init, Validate, Format Check
+        uses: ./.github/actions/terraform-init-validate-fmt
+        with:
+          working-directory: "test/aws"
+          format-check-continue-on-error: "true"
 
       - name: Terraform Plan
         run: |
