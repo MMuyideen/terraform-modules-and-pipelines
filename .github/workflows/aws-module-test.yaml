@@ -19,8 +19,6 @@ jobs:
     defaults:
       run:
         working-directory: "test/aws"
-    env:
-    #   ARM_USE_OIDC: "true"
  
 
     steps:
@@ -69,8 +67,6 @@ jobs:
     defaults:
       run:
         working-directory: "test/aws"
-    env:
-    #   ARM_USE_OIDC: "true"
 
     steps:
       # ── Checkout ──
