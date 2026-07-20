@@ -32,7 +32,7 @@ jobs:
     steps:
       # ── Checkout ──
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Azure Login with OIDC
         uses: azure/login@v3
@@ -86,7 +86,7 @@ jobs:
     steps:
       # ── Checkout ──
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Azure Login with OIDC
         uses: azure/login@v3
