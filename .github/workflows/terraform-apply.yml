@@ -102,5 +102,5 @@ jobs:
         uses: MMuyideen/terraform-modules-and-pipelines/.github/actions/terraform-init-validate-fmt@main
 
       - name: Terraform apply
-        run: terraform apply -auto-approve -no-lock
+        run: terraform apply -auto-approve -lock=false
 

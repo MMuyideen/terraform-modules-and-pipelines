@@ -102,5 +102,5 @@ jobs:
           credentials_json: ${{ inputs.credentials_json }}
 
       - name: Terraform destroy
-        run: terraform destroy -auto-approve -no-lock
+        run: terraform destroy -auto-approve -lock=false
 
