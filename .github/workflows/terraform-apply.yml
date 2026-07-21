@@ -70,9 +70,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Setup Terraform
-        uses: MMuyideen/terraform-modules-and-pipelines/.github/actions/terraform-init-validate-fmt@main
-
       - name: Azure Login
         if: inputs.cloud_provider == 'azure'
         uses: MMuyideen/terraform-modules-and-pipelines/.github/actions/azure-login@main
@@ -101,6 +98,9 @@ jobs:
           service_account: ${{ inputs.service_account }}
           credentials_json: ${{ inputs.credentials_json }}
 
+      - name: Setup Terraform
+        uses: MMuyideen/terraform-modules-and-pipelines/.github/actions/terraform-init-validate-fmt@main
+        
       - name: Terraform apply
         run: terraform apply -no-color tfplan
 
