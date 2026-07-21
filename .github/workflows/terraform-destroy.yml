@@ -65,6 +65,9 @@ jobs:
     defaults:
       run:
         working-directory: ${{ inputs.working_directory }}
+    env:
+      TF_VAR_admin_password: ${{ secrets.TF_VAR_admin_password }}
+      TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
 
     steps:
       - name: Checkout repository
@@ -102,5 +105,5 @@ jobs:
           credentials_json: ${{ inputs.credentials_json }}
 
       - name: Terraform destroy
-        run: terraform destroy -auto-approve -lock=false
+        run: terraform destroy -auto-approve -lock=false -input=false
 

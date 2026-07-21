@@ -65,6 +65,9 @@ jobs:
     defaults:
       run:
         working-directory: ${{ inputs.working_directory }}
+    env:
+      TF_VAR_admin_password: ${{ secrets.TF_VAR_admin_password }}
+      TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
 
     steps:
       - name: Checkout repository
@@ -102,5 +105,5 @@ jobs:
         uses: MMuyideen/terraform-modules-and-pipelines/.github/actions/terraform-init-validate-fmt@main
 
       - name: Terraform apply
-        run: terraform apply -auto-approve -lock=false
+        run: terraform apply -auto-approve -lock=false -input=false
 
