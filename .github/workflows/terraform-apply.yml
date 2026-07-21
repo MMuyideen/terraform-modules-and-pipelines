@@ -100,7 +100,7 @@ jobs:
 
       - name: Setup Terraform
         uses: MMuyideen/terraform-modules-and-pipelines/.github/actions/terraform-init-validate-fmt@main
-        
+
       - name: Terraform apply
-        run: terraform apply -no-color tfplan
+        run: terraform apply -no-color 
 
