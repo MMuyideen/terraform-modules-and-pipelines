@@ -67,7 +67,7 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
     env:
       TF_VAR_admin_password: ${{ secrets.TF_VAR_admin_password }}
-      TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
+      TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     steps:
       - name: Checkout repository
