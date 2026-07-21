@@ -70,66 +70,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # - name: Checkout modules repository
-      #   uses: actions/checkout@v7
-      #   with:
-      #     repository: mmuyideen/terraform-modules-and-pipelines
-      #     path: modules-repo
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
+        uses: ./.github/actions/terraform-init-validate-fmt
 
-
-      - name: Configure Azure credentials
+      - name: Azure Login
         if: inputs.cloud_provider == 'azure'
-        run: |
-          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "AZURE_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
-          echo "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
-
-      - name: Configure AWS credentials
-        if: inputs.cloud_provider == 'aws'
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: ./.github/actions/azure-login
         with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: AWS Login
+        uses: ./.github/actions/aws-login
+        with:
+          role-to-assume: arn:aws:iam::413677591682:role/Github-action-oidc
+          aws-region: us-east-1
+          role-session-name: GitHubActions-${{ github.run_id }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
-      - name: Set Terraform variables from secrets
-        env:
-          TF_VAR_admin_password: ${{ secrets.TF_VAR_admin_password }}
-          TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
-        run: |
-          if [ -n "$TF_VAR_admin_password" ]; then
-            echo "TF_VAR_admin_password=$TF_VAR_admin_password" >> $GITHUB_ENV
-          fi
-          if [ -n "$TF_VAR_subscription_id" ]; then
-            echo "TF_VAR_subscription_id=$TF_VAR_subscription_id" >> $GITHUB_ENV
-          fi
-
-      - name: Download plan artifact
-        if: ${{ !inputs.auto_approve }}
-        uses: actions/download-artifact@v8
+      - name: GCP Login
+        if: inputs.cloud_provider == 'gcp'
+        uses: ./.github/actions/gcp-login
         with:
-          name: tfplan-${{ inputs.environment }}
-          path: ${{ inputs.working_directory }}
+          service-account-key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          workload_identity_provider: ${{ inputs.workload_identity_provider }}
+          service_account: ${{ inputs.service_account }}
+          credentials_json: ${{ inputs.credentials_json }}
 
-      - name: Terraform init
-        run: |
-          terraform init \
-            -backend=true \
-            ${{ inputs.backend_config }}
-
-      - name: Terraform apply (with plan)
-        if: ${{ !inputs.auto_approve }}
+      - name: Terraform apply
         run: terraform apply -no-color tfplan
 
-      - name: Terraform apply (auto-approve)
-        if: ${{ inputs.auto_approve }}
-        run: |
-          terraform apply \
-            -no-color \
-            -auto-approve \
-            ${{ inputs.var_file != '' && format('-var-file={0}', inputs.var_file) || '' }}
