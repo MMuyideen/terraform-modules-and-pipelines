@@ -7,15 +7,6 @@ on:
         description: "Directory containing Terraform configuration"
         required: true
         type: string
-      # terraform_version:
-      #   description: "Terraform version to use"
-      #   required: false
-      #   type: string
-      #   default: "1.7.0"
-      backend_config:
-        description: "Backend configuration string (e.g., -backend-config=key=value)"
-        required: false
-        type: string
       var_file:
         description: "Path to Terraform variables file"
         required: false
@@ -29,11 +20,6 @@ on:
         required: false
         type: string
         default: "dev"
-      auto_approve:
-        description: "Skip plan artifact and use -auto-approve"
-        required: false
-        type: boolean
-        default: false
       # modules_repo:
       #   description: "Repository containing Terraform modules"
       #   required: false
@@ -103,7 +89,7 @@ jobs:
 
       - name: Setup Terraform
         uses: MMuyideen/terraform-modules-and-pipelines/.github/actions/terraform-init-validate-fmt@main
-        
+
       - name: Terraform destroy
         run: terraform destroy -auto-approve -lock=false -input=false
 
