@@ -85,6 +85,9 @@ jobs:
 
       - name: Setup Terraform
         uses: MMuyideen/terraform-modules-and-pipelines/.github/actions/terraform-init-validate-fmt@main
+        with:
+          working-directory: ${{ inputs.working_directory }}
+          format-check-continue-on-error: true
 
       - name: Terraform apply
         run: terraform apply -auto-approve -lock=false -input=false

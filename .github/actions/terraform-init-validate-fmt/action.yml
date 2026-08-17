@@ -4,6 +4,10 @@ description: >
   in sequence for a given working directory.
 
 inputs:
+  working-directory:
+    description: 'Directory containing the Terraform configuration to run against'
+    required: false
+    default: '.'
   format-check-continue-on-error:
     description: 'Whether the workflow should continue if the format check fails'
     required: false
