@@ -27,15 +27,15 @@ resource "azurerm_linux_virtual_machine" "this" {
   network_interface_ids = var.network_interface_ids
 
   os_disk {
-    caching              = try(var.os_disk.caching, "ReadWrite")
-    storage_account_type = try(var.os_disk.storage_account_type, "Standard_LRS")
+    caching              = coalesce(try(var.os_disk.caching, null), "ReadWrite")
+    storage_account_type = coalesce(try(var.os_disk.storage_account_type, null), "Standard_LRS")
   }
 
   source_image_reference {
-    publisher = try(var.source_image_reference.publisher, "Canonical")
-    offer     = try(var.source_image_reference.offer, "ubuntu-24_04-lts")
-    sku       = try(var.source_image_reference.sku, "server")
-    version   = try(var.source_image_reference.version, "latest")
+    publisher = coalesce(try(var.source_image_reference.publisher, null), "Canonical")
+    offer     = coalesce(try(var.source_image_reference.offer, null), "ubuntu-26_04-lts")
+    sku       = coalesce(try(var.source_image_reference.sku, null), "server")
+    version   = coalesce(try(var.source_image_reference.version, null), "latest")
   }
 
   # Optional custom data for cloud-init scripts
@@ -60,15 +60,15 @@ resource "azurerm_windows_virtual_machine" "this" {
   network_interface_ids = var.network_interface_ids
 
   os_disk {
-    caching              = try(var.os_disk.caching, "ReadWrite")
-    storage_account_type = try(var.os_disk.storage_account_type, "Standard_LRS")
+    caching              = coalesce(try(var.os_disk.caching, null), "ReadWrite")
+    storage_account_type = coalesce(try(var.os_disk.storage_account_type, null), "Standard_LRS")
   }
 
   source_image_reference {
-    publisher = try(var.source_image_reference.publisher, "MicrosoftWindowsDesktop")
-    offer     = try(var.source_image_reference.offer, "windows-11")
-    sku       = try(var.source_image_reference.sku, "win11-24h2-pro")
-    version   = try(var.source_image_reference.version, "latest")
+    publisher = coalesce(try(var.source_image_reference.publisher, null), "MicrosoftWindowsDesktop")
+    offer     = coalesce(try(var.source_image_reference.offer, null), "windows-11")
+    sku       = coalesce(try(var.source_image_reference.sku, null), "win11-24h2-pro")
+    version   = coalesce(try(var.source_image_reference.version, null), "latest")
   }
 
   # Optional custom data (for Windows, typically for WinRM or other setup scripts)
