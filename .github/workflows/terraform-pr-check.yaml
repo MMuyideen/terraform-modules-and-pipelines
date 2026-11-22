@@ -1,0 +1,47 @@
+name: Terraform PR checks
+
+# Credential-free checks (no backend, no cloud login) so they also run on
+# Dependabot PRs, which cannot read normal Actions secrets or use OIDC.
+on:
+  pull_request:
+    paths:
+      - 'modules/**'
+      - 'test/**'
+      - '.github/workflows/terraform-pr-check.yaml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-pr-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: "Validate (${{ matrix.cloud }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cloud: [aws, azure, gcp]
+    defaults:
+      run:
+        working-directory: test/${{ matrix.cloud }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      # Non-blocking until the existing unformatted modules are cleaned up
+      - name: Terraform Format Check
+        continue-on-error: true
+        run: terraform fmt -check -recursive ../../modules/${{ matrix.cloud }} .
+
+      - name: Terraform Init (no backend)
+        run: terraform init -backend=false -input=false
+
+      - name: Terraform Validate
+        run: terraform validate
