@@ -9,10 +9,9 @@ resource "azurerm_private_dns_zone" "this" {
 resource "azurerm_private_dns_zone_virtual_network_link" "this" {
   count = var.create_vnet_link ? 1 : 0
 
-  name                  = "${var.private_dns_zone_name}-vnet-link"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.this.name
-  virtual_network_id    = var.virtual_network_id
+  name                = "${var.private_dns_zone_name}-vnet-link"
+  private_dns_zone_id = azurerm_private_dns_zone.this.id
+  virtual_network_id  = var.virtual_network_id
 }
 
 # Optionally create DNS records
@@ -23,8 +22,7 @@ resource "azurerm_private_dns_a_record" "this" {
   }
 
   name                = each.value.name
-  zone_name           = azurerm_private_dns_zone.this.name
-  resource_group_name = var.resource_group_name
+  private_dns_zone_id = azurerm_private_dns_zone.this.id
   ttl                 = try(each.value.ttl, 3600)
   records             = each.value.records
 }
@@ -36,8 +34,7 @@ resource "azurerm_private_dns_cname_record" "this" {
   }
 
   name                = each.value.name
-  zone_name           = azurerm_private_dns_zone.this.name
-  resource_group_name = var.resource_group_name
+  private_dns_zone_id = azurerm_private_dns_zone.this.id
   ttl                 = try(each.value.ttl, 3600)
   record              = each.value.records[0]
 }
@@ -49,8 +46,7 @@ resource "azurerm_private_dns_mx_record" "this" {
   }
 
   name                = each.value.name
-  zone_name           = azurerm_private_dns_zone.this.name
-  resource_group_name = var.resource_group_name
+  private_dns_zone_id = azurerm_private_dns_zone.this.id
   ttl                 = try(each.value.ttl, 3600)
 
   dynamic "record" {
@@ -69,8 +65,7 @@ resource "azurerm_private_dns_txt_record" "this" {
   }
 
   name                = each.value.name
-  zone_name           = azurerm_private_dns_zone.this.name
-  resource_group_name = var.resource_group_name
+  private_dns_zone_id = azurerm_private_dns_zone.this.id
   ttl                 = try(each.value.ttl, 3600)
 
   dynamic "record" {
